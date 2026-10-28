@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netbox-drawing-canvas"
+version = "0.1.0"
+description = "Tenant-scoped equipment drawing sheets for NetBox"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = ["netbox_drawing_canvas*"]
+
+[tool.setuptools.package-data]
+netbox_drawing_canvas = ["templates/**/*.html", "static/**/*.js", "static/**/*.css"]

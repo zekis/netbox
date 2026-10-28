@@ -1,0 +1,13 @@
+{% extends 'base/layout.html' %}
+{% block title %}Drawing sheets{% endblock %}
+{% block content %}
+<h1>Drawing sheets</h1>
+<p>One equipment record, many appearances. Each drawing is a tenant-scoped sheet.</p>
+<ul>{% for drawing in drawings %}
+  <li><a href="{{ drawing.get_absolute_url }}">{{ drawing.title }}</a> — {{ drawing.get_state_display }} · revision {{ drawing.revision }}</li>
+{% empty %}<li>No accessible sheets yet.</li>{% endfor %}</ul>
+{% if can_add %}
+<h2>New sheet</h2>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Create sheet</button></form>
+{% endif %}
+{% endblock %}
