@@ -1,0 +1,35 @@
+{% extends 'base/layout.html' %}
+{% load static %}
+{% block title %}{{ drawing.title }} — Drawing Canvas{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'netbox_drawing_canvas/canvas.css' %}">
+<div id="drawing-app" data-editable="{{ editable|yesno:'true,false' }}"
+     data-scene-url="{% url 'plugins:netbox_drawing_canvas:drawing_scene' pk=drawing.pk %}"
+     data-equipment-url="{% url 'plugins:netbox_drawing_canvas:drawing_equipment' pk=drawing.pk %}">
+  {% csrf_token %}
+  <div class="drawing-toolbar">
+    <div><a href="{% url 'plugins:netbox_drawing_canvas:drawing_list' %}">← Sheets</a><h1>{{ drawing.title }}</h1></div>
+    <label>State <select class="no-ts" id="drawing-state" {% if not editable %}disabled{% endif %}><option value="draft">Draft</option><option value="review">Review</option></select></label>
+    <span id="save-status" role="status" aria-live="polite">Loading…</span>
+    <button id="reset-view" type="button">Reset view</button>
+    <button id="save-scene" type="button" disabled>Save</button>
+  </div>
+  <p class="drawing-help">Drag equipment to move · drag empty space to pan · scroll to zoom at pointer. Changes require Save.</p>
+  <div id="drawing-error" role="alert" hidden></div>
+  <div class="drawing-layout">
+    <aside class="drawing-sidebar">
+      <h2>Equipment</h2>
+      <label>Type <select class="no-ts" id="equipment-kind"><option value="device">Devices</option><option value="rack">Racks</option></select></label>
+      <label>Search <input id="equipment-search" type="search" placeholder="Name contains…"></label>
+      <button id="search-equipment" type="button">Search</button>
+      <p>Visible equipment in this sheet’s tenant. Up to 100 results; search to narrow.</p>
+      <div id="equipment-list"></div>
+    </aside>
+    <div id="canvas" tabindex="0" aria-label="Equipment drawing canvas"><div id="canvas-world"></div></div>
+    <aside class="drawing-sidebar" id="properties"><h2>Properties</h2><p>Select an appearance.</p></aside>
+  </div>
+  <p>Drawing appearances only. Physical cables, modules, rack positions and quantities are never inferred or modified.</p>
+  {% if drawing.source_reference %}<p>Source reference: {{ drawing.source_reference }}</p>{% endif %}
+</div>
+<script src="{% static 'netbox_drawing_canvas/canvas.js' %}" defer></script>
+{% endblock %}

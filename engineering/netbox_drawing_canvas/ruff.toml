@@ -1,0 +1,5 @@
+extend = "../../pyproject.toml"
+
+[lint.per-file-ignores]
+# Django-generated schema operations preserve the generator's formatting.
+"**/migrations/*.py" = ["E501"]

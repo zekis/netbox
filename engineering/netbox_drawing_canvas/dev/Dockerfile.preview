@@ -1,0 +1,5 @@
+ARG NETBOX_IMAGE=netboxcommunity/netbox:v4.2.9
+FROM ${NETBOX_IMAGE}
+USER root
+COPY . /opt/drawing-plugin
+RUN uv pip install --python /opt/netbox/venv/bin/python /opt/drawing-plugin

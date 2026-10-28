@@ -1,0 +1,22 @@
+.drawing-toolbar {display:flex; align-items:center; gap:1rem; flex-wrap:wrap}
+.drawing-toolbar h1 {font-size:1.5rem; margin:.5rem 0}
+.drawing-toolbar button, .drawing-sidebar button {padding:.45rem .8rem; border:1px solid #648498; border-radius:5px}
+#save-scene {background:#126c8b; color:white}
+#save-scene:disabled {opacity:.5}
+.drawing-help {margin:1rem 0; color:#607584}
+.drawing-layout {display:grid; grid-template-columns:210px minmax(300px,1fr) 240px; min-height:560px; border:1px solid #a4bac8; border-radius:8px; overflow:hidden}
+.drawing-sidebar {padding:16px; background:var(--bs-body-bg,white); overflow-wrap:anywhere}
+.drawing-sidebar h2 {font-size:1.1rem}
+.drawing-sidebar label {display:block; margin-bottom:10px}
+.drawing-sidebar input,.drawing-sidebar select {width:100%; padding:5px}
+.drawing-sidebar p {font-size:.85rem}
+#equipment-list button {display:block; width:100%; margin:7px 0; text-align:left}
+#canvas {position:relative; overflow:hidden; touch-action:none; background-color:#eef4f7; background-image:radial-gradient(#b6cad6 1px,transparent 1px); background-size:20px 20px; cursor:grab; min-height:560px}
+#canvas-world {position:absolute; transform-origin:0 0; inset:0; pointer-events:none}
+.appearance {position:absolute; width:168px; min-height:76px; background:#fff; color:#14384e; border:2px solid #38728d; border-radius:8px; padding:10px; text-align:left; pointer-events:auto; cursor:move; box-shadow:0 3px 8px #193f5420; user-select:none}
+.appearance.rack {border-color:#7962a8; background:#f6f2fc}
+.appearance.selected {outline:3px solid #f3ac35; outline-offset:3px}
+.appearance small {display:block; color:#536c7b; margin-bottom:6px}
+.appearance strong {display:block; overflow-wrap:anywhere}
+#drawing-error {padding:12px; background:#ffe1df; color:#8a1b14; margin:10px 0}
+@media(max-width:1000px) {.drawing-layout {grid-template-columns:170px minmax(250px,1fr)} #properties {grid-column:1/-1}}
