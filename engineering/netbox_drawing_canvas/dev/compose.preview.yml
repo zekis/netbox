@@ -50,6 +50,7 @@ services:
       - preview-media:/opt/netbox/netbox/media
       - preview-static:/opt/netbox/netbox/static
     healthcheck:
+      test: [CMD, /opt/netbox/venv/bin/python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/login/', timeout=5)"]
       start_period: 120s
       interval: 15s
       timeout: 10s
