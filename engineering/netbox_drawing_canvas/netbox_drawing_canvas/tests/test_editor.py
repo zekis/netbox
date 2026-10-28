@@ -166,6 +166,16 @@ class EditorTests(TestCase):
         self.assertEqual(self.save(revision=True).status_code, 409)
         self.assertEqual(self.save(state='published').status_code, 400)
 
+    def test_oversized_numbers_return_validation_errors_without_writes(self):
+        for field in ('object_id', 'x', 'y'):
+            with self.subTest(field=field):
+                scene = copy.deepcopy(self.scene)
+                scene['appearances'][0][field] = 10**1000
+                response = self.save(scene=scene)
+                self.assertEqual(response.status_code, 400, response.content)
+        self.drawing.refresh_from_db()
+        self.assertEqual(self.drawing.revision, 1)
+
     def test_create_context_validation(self):
         url = reverse('plugins:netbox_drawing_canvas:drawing_list')
         response = self.client.post(url, {'title': 'New sheet', 'tenant': self.tenant.pk, 'site': self.site.pk,

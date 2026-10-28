@@ -15,6 +15,7 @@ from netbox_drawing_canvas.models import Drawing
 from users.models import User
 
 assert settings.PLUGINS_CONFIG['netbox_drawing_canvas']['synthetic_demo']
+expect.set_options(timeout=30000)
 base = os.environ.get('DRAWING_DEV_URL', 'http://127.0.0.1:8009')
 assert base.startswith('http://127.0.0.1:')
 call_command('drawing_demo')
@@ -29,6 +30,8 @@ screenshot = Path(os.environ.get('DRAWING_SCREENSHOT', '/tmp/drawing-canvas-smok
 with sync_playwright() as playwright:
     browser = playwright.chromium.launch()
     context = browser.new_context(viewport={'width': 1600, 'height': 1000})
+    # Exercise ordinary HTTP hosting, where the secure-context randomUUID API is absent.
+    context.add_init_script("Object.defineProperty(crypto, 'randomUUID', {value: undefined});")
     context.add_cookies([{'name': settings.SESSION_COOKIE_NAME,
                          'value': client.cookies[settings.SESSION_COOKIE_NAME].value,
                          'url': base}])

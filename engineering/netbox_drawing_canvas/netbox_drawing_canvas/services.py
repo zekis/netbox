@@ -10,6 +10,7 @@ from tenancy.models import Tenant
 from .models import Drawing
 
 EQUIPMENT = {'device': Device, 'rack': Rack}
+MAX_OBJECT_ID = 2**63 - 1
 
 
 def drawings_for(user, action='view'):
@@ -48,11 +49,12 @@ def validate_scene(scene, drawing, user):
         seen.add(identifier)
         if not isinstance(item['kind'], str) or item['kind'] not in EQUIPMENT:
             raise ValidationError('Only device and rack appearances are supported.')
-        if type(item['object_id']) is not int or item['object_id'] <= 0:
-            raise ValidationError('Object ID must be a positive integer.')
+        if type(item['object_id']) is not int or not 0 < item['object_id'] <= MAX_OBJECT_ID:
+            raise ValidationError('Object ID must be a positive 64-bit integer.')
         for axis in ('x', 'y'):
             value = item[axis]
-            if type(value) not in (int, float) or not math.isfinite(value) or abs(value) > 100000:
+            # Bound integers before float conversion: math.isfinite(10**1000) raises OverflowError.
+            if type(value) not in (int, float) or abs(value) > 100000 or not math.isfinite(value):
                 raise ValidationError('Coordinates must be finite and between -100000 and 100000.')
         refs[item['kind']].add(item['object_id'])
     for kind, ids in refs.items():

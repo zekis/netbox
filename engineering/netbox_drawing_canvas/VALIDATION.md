@@ -48,3 +48,31 @@ Authenticate with a local user created using `dev/manage.sh createsuperuser`; th
 browser smoke user's session is temporary and is logged out at the end. See the
 README for repeatable launcher and test commands. These URLs are not public hosting
 and require access/port forwarding to the development runtime.
+# Independent review and Ash preview - 28 October 2026
+
+Reviewed the backend validation, tenant/object permission checks, scene revision
+locking, browser interactions and deployment boundaries. Fixed two issues:
+
+- Ordinary HTTP hosting lacks `crypto.randomUUID`: use cryptographic UUID v4
+  generation through `getRandomValues` when needed, preserving canonical IDs.
+- Oversized JSON integers could raise `OverflowError` in coordinate validation or
+  exceed database ID limits. Bound IDs and coordinates before float conversion
+  and database queries; malformed values return 400 without writes.
+
+Added regression coverage and a dedicated plugin CI matrix. The previous core CI
+did not exercise the plugin directory. CI also runs the browser smoke with the
+secure-context UUID API deliberately disabled.
+
+Independently reran on an isolated NetBox 4.2.9 Docker preview:
+
+- 18 backend tests passed, including tenant restrictions, object permissions,
+  concurrent writes, CSRF and oversized-number regressions.
+- Django system checks and migration drift checks passed.
+- Real Edge/Chromium browser from another machine over private-network HTTP
+  passed: login, UUID fallback, place/drag, explicit save/reopen, pan/zoom,
+  conflicting saves in two tabs, removal, detail link and restoring draft state.
+- Browser reported no JavaScript errors. Only synthetic fixtures were used.
+
+The preview has its own database/cache/volumes and unique private credentials.
+The existing live NetBox database and services were not changed. This review does
+not add connector routing or other functionality outside the first MVP.

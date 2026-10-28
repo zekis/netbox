@@ -5,3 +5,5 @@ build/
 dist/
 .venv/
 *.log
+.env
+*.env

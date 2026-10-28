@@ -12,6 +12,15 @@
   let scene, revision, dirty = false, busy = false, generation = 0, selected = null;
   let zoom = 1, pan = {x: 40, y: 40}, gesture = null;
   const key = item => `${item.kind}:${item.object_id ?? item.id}`;
+  function appearanceId() {
+    // randomUUID requires HTTPS/localhost; private HTTP previews still provide getRandomValues.
+    if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 15) | 64;
+    bytes[8] = (bytes[8] & 63) | 128;
+    const hex = [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
   function report(message) { error.textContent = message; error.hidden = !message; }
   function refreshStatus() {
     status.textContent = busy ? 'Saving…' : dirty ? 'Unsaved changes' : `Saved · revision ${revision}${editable ? '' : ' · read only'}`;
@@ -84,7 +93,7 @@
         const button = document.createElement('button'); button.type = 'button'; button.textContent = `+ ${row.name}`;
         button.disabled = !editable || !scene;
         button.onclick = () => {
-          const item = {id: crypto.randomUUID(), kind, object_id: row.id,
+          const item = {id: appearanceId(), kind, object_id: row.id,
             x: Math.round((canvas.clientWidth / 2 - pan.x) / zoom - 84),
             y: Math.round((canvas.clientHeight / 2 - pan.y) / zoom - 38)};
           scene.appearances.push(item); changed(); draw(); select(item);

@@ -7,6 +7,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 DATABASE = {
     'NAME': os.environ.get('DRAWING_DEV_DB', 'drawing_canvas'),
     'USER': os.environ.get('DRAWING_DEV_DB_USER', getpass.getuser()),
+    'PASSWORD': os.environ.get('DRAWING_DEV_DB_PASSWORD', ''),
     'HOST': '127.0.0.1', 'PORT': 55439,
     'TEST': {'CHARSET': 'UTF8', 'TEMPLATE': 'template0'},
 }

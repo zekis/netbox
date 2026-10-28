@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: drawing_preview
+      POSTGRES_USER: drawing_preview
+      POSTGRES_PASSWORD: ${DRAWING_DB_PASSWORD:?Set a private preview database password}
+    volumes:
+      - preview-db:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U drawing_preview -d drawing_preview']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  netbox:
+    build:
+      context: ..
+      dockerfile: dev/Dockerfile.preview
+      args:
+        NETBOX_IMAGE: ${NETBOX_IMAGE:-netboxcommunity/netbox:v4.2.9}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DRAWING_DB_PASSWORD: ${DRAWING_DB_PASSWORD:?Set a private preview database password}
+      DRAWING_SECRET_KEY: ${DRAWING_SECRET_KEY:?Set a unique preview secret}
+      DRAWING_API_PEPPER: ${DRAWING_API_PEPPER:?Set a unique preview token pepper}
+      DRAWING_ALLOWED_HOSTS: ${DRAWING_ALLOWED_HOSTS:-localhost,127.0.0.1,testserver}
+      SUPERUSER_NAME: preview
+      SUPERUSER_EMAIL: ''
+      SUPERUSER_PASSWORD: ${DRAWING_ADMIN_PASSWORD:?Set a private preview login password}
+      SKIP_SUPERUSER: 'false'
+      SKIP_STARTUP_SCRIPTS: 'true'
+    ports:
+      - '${DRAWING_BIND_ADDRESS:-127.0.0.1}:${DRAWING_PORT:-8009}:8080'
+    volumes:
+      - ./preview_configuration.py:/etc/netbox/config/configuration.py:ro
+      - preview-media:/opt/netbox/netbox/media
+      - preview-static:/opt/netbox/netbox/static
+    healthcheck:
+      start_period: 120s
+      interval: 15s
+      timeout: 10s
+      retries: 10
+volumes:
+  preview-db:
+  preview-media:
+  preview-static:

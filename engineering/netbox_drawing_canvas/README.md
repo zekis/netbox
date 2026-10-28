@@ -91,6 +91,11 @@ kill "$(cat "$DRAWING_DEV_STATE/redis.pid")"
 
 ## Checks
 
+The fork's `Drawing canvas` GitHub Actions workflow runs this plugin's backend and
+browser checks on NetBox 4.2.9 and 4.7.4 when plugin files change. It uses synthetic
+data and an isolated PostgreSQL/Redis pair. This supplements core CI, whose path
+filters do not cover this plugin directory.
+
 ```sh
 ./dev/manage.sh check
 ./dev/manage.sh test netbox_drawing_canvas.tests --keepdb --noinput
@@ -172,3 +177,38 @@ creation. Draft/review is a label, not an approval workflow. Scene schema versio
 optimistic revision are stored; historical scene snapshots are not an editor feature.
 Do not infer unknown ports, physical connections or procurement quantities from a
 visual arrangement.
+
+## Private-network preview in Docker
+
+`dev/compose.preview.yml` creates separate database/cache/media/static volumes and
+installs the plugin into a NetBox Docker image. It does not use an existing NetBox
+database or configuration. The default published address is loopback; expose it
+only on an intended private interface and use unique credentials. HTTP previews
+are supported without the secure-context-only `crypto.randomUUID` API.
+
+Create an environment file outside this repository with permissions `0600`:
+
+```text
+NETBOX_IMAGE=netboxcommunity/netbox:v4.2.9
+DRAWING_DB_PASSWORD=<unique random password>
+DRAWING_SECRET_KEY=<unique random secret of at least 50 characters>
+DRAWING_API_PEPPER=<unique random secret>
+DRAWING_ADMIN_PASSWORD=<unique random login password>
+DRAWING_BIND_ADDRESS=127.0.0.1
+DRAWING_PORT=8009
+DRAWING_ALLOWED_HOSTS=localhost,127.0.0.1,testserver
+```
+
+Run from the plugin directory:
+
+```sh
+docker compose -p netbox-drawing-preview --env-file /private/preview.env -f dev/compose.preview.yml up -d --build
+docker compose -p netbox-drawing-preview --env-file /private/preview.env -f dev/compose.preview.yml exec netbox /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py collectstatic --noinput
+docker compose -p netbox-drawing-preview --env-file /private/preview.env -f dev/compose.preview.yml exec netbox /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py drawing_demo
+```
+
+Sign in as `preview` using your environment file's admin password. The example
+equipment and initial sheet are synthetic. The preview restarts automatically
+with Docker; its state persists in the dedicated volumes. Stop it with the same
+compose command followed by `stop`. Do not use `down -v` unless intentionally
+discarding the preview database and uploaded files.
