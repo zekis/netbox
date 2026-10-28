@@ -185,6 +185,8 @@ installs the plugin into a NetBox Docker image. It does not use an existing NetB
 database or configuration. The default published address is loopback; expose it
 only on an intended private interface and use unique credentials. HTTP previews
 are supported without the secure-context-only `crypto.randomUUID` API.
+Preview session/CSRF cookies have distinct names so signing in does not replace
+another NetBox instance's cookies on the same hostname at a different port.
 
 Create an environment file outside this repository with permissions `0600`:
 
