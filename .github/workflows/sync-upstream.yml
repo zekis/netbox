@@ -1,0 +1,38 @@
+name: Sync upstream NetBox
+
+on:
+  schedule:
+    - cron: '17,47 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/sync-upstream.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: upstream-main-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-main:
+    if: github.repository == 'zekis/netbox'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Merge upstream main without force
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/${GH_REPO}/merge-upstream" -f branch=main
+          {
+            echo '### Upstream sync'
+            echo 'Merged netbox-community/netbox:main into fork main using the GitHub fork-sync API.'
+            echo 'No force push, reset, engineering-branch change or deployment is performed.'
+            echo 'Conflicts or permission failures stop this workflow and preserve branch contents.'
+          } >> "$GITHUB_STEP_SUMMARY"
